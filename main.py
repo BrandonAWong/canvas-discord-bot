@@ -132,7 +132,7 @@ async def assignments(ctx):
 async def source(ctx):
     embed = discord.Embed(
         title ="🐱‍👤 Source Code",
-        description = 'If you have a suggestion or come across a bug, make a pull request or message me',
+        description = 'If you have a suggestion or come across a bug, make an issue / pull request or message me',
         url = "https://github.com/BrandonAWong/canvas",
         color = 0x333)
     embed.set_footer(icon_url = "https://cdn.discordapp.com/attachments/1016129238862135396/1016151538923733012/unknown.png", text = "Brandon#4704")
