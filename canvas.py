@@ -2,10 +2,11 @@ from time import strftime
 from canvasapi import Canvas
 from pytz import timezone
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import os
 import datetime
+import asyncio
 
 load_dotenv()
 
@@ -13,14 +14,15 @@ API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
 
 DISCORD_CLIENT = os.getenv("DISCORD_CLIENT")
+CHANNEL_ID = 1011740189682581618 # snowflake | change according to where you want messages to default
 client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
-channel = client.get_channel(1015752665357107261) # snowflake | change according to where you want messages to default
+
 
 canvas = Canvas(API_URL, API_KEY)
-course_id = 3224 # change this per course
+COURSE_ID = 3224 # change COURSE_ID per course
 
-course = canvas.get_course(course_id)
-course_assignments_url = f"{API_URL}courses/{course_id}/assignments"
+course = canvas.get_course(COURSE_ID)
+COURSE_ASSIGNMENTS_URL = f"{API_URL}courses/{COURSE_ID}/assignments"
 
 # get assignment list | returns paginated list 
 def return_assignments():
@@ -38,13 +40,19 @@ def utc_to_pst(utc, format):
     date = utc.astimezone(timezone('US/Pacific'))
     return date.strftime(date_format)
 
-# on start | debug
+# on start | debug & daily_reminder start loop
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+    while True: # repeat until 08:30
+        if str(strftime("%H:%M")) == "08:30":
+            daily_reminder.start(CHANNEL_ID)
+            break
 
-# daily_reminder | checks whats due today and tomorrow
+# daily_reminder | returns what's due today and tomorrow
+@tasks.loop(hours=24)
 async def daily_reminder(ctx):
+    channel = client.get_channel(CHANNEL_ID) 
     assignment_count_today = 0
     assignment_count_tomorrow = 0
     inner_value_today = ""
@@ -60,7 +68,6 @@ async def daily_reminder(ctx):
         if str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"): # find way to break after it fails
             inner_value_tomorrow += str(i) + "\n"
             assignment_count_tomorrow += 1
-
     if assignment_count_today > 0:
         embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
     else:
@@ -69,16 +76,17 @@ async def daily_reminder(ctx):
         embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
     else:
         embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
-    await ctx.send(embed=embed)
+    await channel.send(embed=embed)
+
 
 # -commands | returns list of commands
 @client.command()
 async def commands(ctx):
     embed = discord.Embed(
-        title="Commands",
+        title ="🐧 Commands",
         color = 0x68BBE3)
     embed.add_field(name = "-due", value = "returns an assignment that should be priortized as it will be due soon", inline = False)
-    embed.add_field(name = "-assignments", value = "returns a list of upcoming assignments", inline = False)
+    embed.add_field(name = "-assignments", value = "returns a list of all upcoming assignments", inline = False)
     embed.add_field(name = "-source", value = "returns a link to source code", inline = False)
     await ctx.send(embed=embed)
 
@@ -94,8 +102,8 @@ async def due(ctx):
     for i in bad_characters:
         description = description.replace(i, "")
     embed = discord.Embed(
-        title="Upcoming Assignments",
-        url = course_assignments_url,
+        title ="💯 Upcoming Assignments",
+        url = COURSE_ASSIGNMENTS_URL,
         color = 0xF4364C)
     embed.add_field(name = str(assignment), value = f"Due: {date}\n"
                                                     f"Locks at: {lock_date}\n"
@@ -110,8 +118,8 @@ async def assignments(ctx):
     assignments = return_assignments()
     dates = []
     embed = discord.Embed(
-        title="✏ Assignments",
-        url = course_assignments_url,
+        title ="📝 Assignments",
+        url = COURSE_ASSIGNMENTS_URL,
         color = 0x32CD30)
     for i in assignments:
         dates.append(utc_to_pst(i.due_at_date, "include_hour"))
@@ -123,7 +131,7 @@ async def assignments(ctx):
 @client.command()
 async def source(ctx):
     embed = discord.Embed(
-        title="Source",
+        title ="🐱‍👤 Source Code",
         description = 'If you have a suggestion or come across a bug, make a pull request or message me',
         url = "https://github.com/BrandonAWong/canvas",
         color = 0x333)
