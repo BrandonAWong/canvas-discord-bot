@@ -5,22 +5,22 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-import time
 
 load_dotenv()
 
 API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
-DISCORD_CLIENT = os.getenv("DISCORD_CLIENT")
 
+DISCORD_CLIENT = os.getenv("DISCORD_CLIENT")
 client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
 canvas = Canvas(API_URL, API_KEY)
 course_id = 3224
 
 course = canvas.get_course(course_id)
-
 course_assignments_url = f"{API_URL}courses/{course_id}/assignments"
+
+date_format = '%m/%d %H:%M'
 
 # announcements = canvas.get_announcements([course_id])
 
@@ -31,7 +31,6 @@ def return_assignments():
     return assignments
 
 def utc_to_pst(utc):
-    date_format = '%m/%d %H:%M'
     date = utc.astimezone(timezone('US/Pacific'))
     return date.strftime(date_format)
 
@@ -58,13 +57,23 @@ async def commands(ctx):
 # -due | returns an upcoming assignment
 @client.command()
 async def due(ctx):
-    assignments = return_assignments()
-    date = utc_to_pst(assignments[0].due_at_date)
+    assignment = return_assignments()[0]
+    date = utc_to_pst(assignment.due_at_date)
+    lock_date = utc_to_pst(assignment.lock_at_date)
+    points = assignment.points_possible
+    description = assignment.description #returns HTML
+    bad_characters = ["<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
+    for i in bad_characters:
+        description = description.replace(i, "")
     embed = discord.Embed(
     title="Upcoming Assignments",
     url = course_assignments_url,
     color = 0xF4364C)
-    embed.add_field(name = str(assignments[0]), value = f"Due: {date} \t🕥")
+    embed.add_field(name = str(assignment), value = f"Due: {date}\n"
+                                                    f"Locks at: {lock_date}\n"
+                                                    f"Points: {points}\n"
+                                                    f"\n{description}")
+
     await ctx.send(embed=embed)
 
 # -assignments | returns list of assignments
@@ -82,7 +91,7 @@ async def assignments(ctx):
         embed.add_field(name = str(assignments[i]), value = f"Due: {dates[i]}", inline = False)
     await ctx.send(embed=embed)
 
-# -source
+# -source | returns github
 @client.command()
 async def source(ctx):
     embed = discord.Embed(
