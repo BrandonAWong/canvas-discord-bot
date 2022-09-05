@@ -14,7 +14,7 @@ API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
 
 DISCORD_CLIENT = os.getenv("DISCORD_CLIENT")
-CHANNEL_ID = 987096406214979634 # snowflake | change according to where you want messages to default
+CHANNEL_ID = 1011740189682581618 # snowflake | change according to where you want messages to default
 client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
 
@@ -45,13 +45,13 @@ def utc_to_pst(utc, format):
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
     while True: # repeat until 08:30
-        if str(strftime("%H:%M")) == "00:27":
+        if str(strftime("%H:%M")) == "08:30":
             daily_reminder.start(CHANNEL_ID)
             break
         await asyncio.sleep(60)
 
 # daily_reminder | returns what's due today and tomorrow
-@tasks.loop(seconds = 3)
+@tasks.loop(hours = 24)
 async def daily_reminder(ctx):
     channel = client.get_channel(CHANNEL_ID) 
     assignment_count_today = 0
