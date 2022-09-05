@@ -103,13 +103,12 @@ async def due(ctx):
     for i in bad_characters:
         description = description.replace(i, "")
     embed = discord.Embed(
-        title ="💯 Upcoming Assignments",
+        title = f"📅 {str(assignment)}",
         url = COURSE_ASSIGNMENTS_URL,
         color = 0xF4364C)
-    embed.add_field(name = str(assignment), value = f"Due: {date}\n"
-                                                    f"Locks at: {lock_date}\n"
-                                                    f"Points: {points}\n"
-                                                    f"\n{description}")
+    embed.add_field(name = f"Due: {date}", value = f"Locks at: {lock_date}\n"
+                                                   f"Points: {points}\n"
+                                                   f"\n{description}")
 
     await ctx.send(embed=embed)
 
