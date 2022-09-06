@@ -14,22 +14,35 @@ API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
 
 DISCORD_CLIENT = os.getenv("DISCORD_CLIENT")
-CHANNEL_ID = 1011740189682581618 # snowflake | change according to where you want messages to default
 client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
-
 canvas = Canvas(API_URL, API_KEY)
-COURSE_ID = 3224 # change COURSE_ID per course
 
-course = canvas.get_course(COURSE_ID)
-COURSE_ASSIGNMENTS_URL = f"{API_URL}courses/{COURSE_ID}/assignments"
+# 1 - CECS 174 | 2 - 
+IDS = {
+    "COURSE_ID_1" : 3224,                   # change COURSE_ID per course
+    "CHANNEL_ID_1" : 1011740189682581618    # snowflake | change according to where you want messages to default
+    } 
+
+def return_course_id(channel_name):
+    if channel_name == "CECS 174":
+        return IDS["COURSE_ID_1"]
+
+def return_course(channel_name):
+    id = return_course_id(channel_name)
+    return canvas.get_course(id)
 
 # get assignment list | returns paginated list 
-def return_assignments():
+def return_assignments(channel_name):
+    course = return_course(channel_name)
     assignments = course.get_assignments(
         bucket = 'upcoming', 
         order_by = 'due_at')
     return assignments
+
+def return_url(channel_name):
+    id = return_course_id(channel_name)
+    return f'{API_URL}courses/{id}/assignments'
 
 # convert utc to pst
 def utc_to_pst(utc, format):
@@ -44,41 +57,49 @@ def utc_to_pst(utc, format):
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    while True: # repeat until 08:30
+    await check_daily_reminder()
+
+async def check_daily_reminder():
+    while True:
         if str(strftime("%H:%M")) == "08:30":
-            daily_reminder.start(CHANNEL_ID)
+            daily_reminder.start("DONT REMOVE THIS PARAMTER DONT KNOW WHY")
             break
         await asyncio.sleep(60)
 
 # daily_reminder | returns what's due today and tomorrow
 @tasks.loop(hours = 24)
 async def daily_reminder(ctx):
-    channel = client.get_channel(CHANNEL_ID) 
-    assignment_count_today = 0
-    assignment_count_tomorrow = 0
-    inner_value_today = ""
-    inner_value_tomorrow = ""
-    today = strftime("%m-%d")
-    embed = discord.Embed(
-    title = f"⏰ Daily Reminder {today}",
-    color = 0xFFFF00)
-    for i in return_assignments():
-        if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
-            inner_value_today += str(i) + "\n"
-            assignment_count_today += 1 
-        if str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"): # find way to break after it fails
-            inner_value_tomorrow += str(i) + "\n"
-            assignment_count_tomorrow += 1
-    if assignment_count_today > 0:
-        embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
-    else:
-        embed.add_field(name = "Assignments Due Today", value = "Nothing due today!", inline = False)
-    if assignment_count_tomorrow > 0:
-        embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
-    else:
-        embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
-    await channel.send(embed=embed)
-
+    for i in range (1, int(len(IDS)/2+1), 1):
+        channel_id = IDS["CHANNEL_ID_"+str(i)]
+        channel = client.get_channel(channel_id) 
+        assignment_count_today = 0
+        assignment_count_tomorrow = 0
+        inner_value_today = ""
+        inner_value_tomorrow = ""
+        today = strftime("%m-%d")
+        course = canvas.get_course(IDS["COURSE_ID_"+str(i)])
+        assignments = course.get_assignments(
+            bucket = 'upcoming', 
+            order_by = 'due_at')
+        embed = discord.Embed(
+        title = f"⏰ Daily Reminder {today}",
+        color = 0xFFFF00)
+        for i in assignments:
+            if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
+                inner_value_today += str(i) + "\n"
+                assignment_count_today += 1 
+            if str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"): # find way to break after it fails
+                inner_value_tomorrow += str(i) + "\n"
+                assignment_count_tomorrow += 1
+        if assignment_count_today > 0:
+            embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
+        else:
+            embed.add_field(name = "Assignments Due Today", value = "Nothing due today!", inline = False)
+        if assignment_count_tomorrow > 0:
+            embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
+        else:
+            embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
+        await channel.send(embed=embed)
 
 # -commands | returns list of commands
 @client.command()
@@ -94,17 +115,19 @@ async def commands(ctx):
 # -due | returns an upcoming assignment
 @client.command()
 async def due(ctx):
-    assignment = return_assignments()[0]
+    channel_name = ctx.message.guild.name
+    assignment = return_assignments(channel_name)[0]
+    title_url = return_url(channel_name)
     date = utc_to_pst(assignment.due_at_date, "include_hour")
     lock_date = utc_to_pst(assignment.lock_at_date, "include_hour")
     points = assignment.points_possible
-    description = assignment.description #returns HTML
+    description = assignment.description # returns HTML
     bad_characters = ["<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
     for i in bad_characters:
         description = description.replace(i, "")
     embed = discord.Embed(
         title = f"📅 {str(assignment)}",
-        url = COURSE_ASSIGNMENTS_URL,
+        url = title_url,
         color = 0xF4364C)
     embed.add_field(name = f"Due: {date}", value = f"Locks at: {lock_date}\n"
                                                    f"Points: {points}\n"
@@ -115,13 +138,15 @@ async def due(ctx):
 # -assignments | returns list of assignments
 @client.command()
 async def assignments(ctx):
-    assignments = return_assignments()
+    channel_name = ctx.message.guild.name
+    assignments = return_assignments(channel_name)
+    title_url = return_url(channel_name)
     dates = []
     embed = discord.Embed(
         title ="📝 Assignments",
-        url = COURSE_ASSIGNMENTS_URL,
+        url = title_url,
         color = 0x32CD30)
-    for i in assignments:
+    for i in assignments: # combine into one loop ?
         dates.append(utc_to_pst(i.due_at_date, "include_hour"))
     for i in range(len(dates)):
         embed.add_field(name = str(assignments[i]), value = f"Due: {dates[i]}", inline = False)
