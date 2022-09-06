@@ -61,7 +61,7 @@ async def on_ready():
 
 async def check_daily_reminder():
     while True:
-        if str(strftime("%H:%M")) == "08:30":
+        if str(strftime("%H:%M")) == "15:30":
             daily_reminder.start("DONT REMOVE THIS PARAMTER DONT KNOW WHY")
             break
         await asyncio.sleep(60)
@@ -70,6 +70,7 @@ async def check_daily_reminder():
 @tasks.loop(hours = 24)
 async def daily_reminder(ctx):
     for i in range (1, int(len(IDS)/2+1), 1):
+        print(str(strftime("%H:%M")))               # adding for debugging 
         channel_id = IDS["CHANNEL_ID_"+str(i)]
         channel = client.get_channel(channel_id) 
         assignment_count_today = 0
