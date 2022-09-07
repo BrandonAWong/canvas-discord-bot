@@ -83,7 +83,7 @@ async def daily_reminder(ctx):
             order_by = 'due_at')
         embed = discord.Embed(
         title = f"⏰ Daily Reminder {today}",
-        color = 0xFFFF00,)
+        color = 0xFFFF00)
         for i in assignments:
             if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
                 assignment_count_today += 1 
@@ -99,7 +99,7 @@ async def daily_reminder(ctx):
             embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         else:
             embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
-        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTIONS 8")
+        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
         await channel.send(embed=embed)
 
 # -commands | returns list of commands
@@ -154,6 +154,7 @@ async def assignments(ctx):
         assignment_count += 1
         embed.add_field(name = f"{assignment_count}. {str(assignments[i])}", value = f"Due: {dates[i]}", inline = False)
     await ctx.send(embed=embed)
+
 # -source | returns github
 @client.command()
 async def source(ctx):
