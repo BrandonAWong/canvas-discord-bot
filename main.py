@@ -87,10 +87,12 @@ async def daily_reminder(ctx):
         for i in assignments:
             if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
                 assignment_count_today += 1 
-                inner_value_today += f"{assignment_count_today}. {str(i)}\n"
-            if str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"): # find way to break after it fails
+                inner_value_today += f"\n{assignment_count_today}. {str(i)}\n"
+            elif str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"):
                 assignment_count_tomorrow += 1
-                inner_value_tomorrow += f"{assignment_count_tomorrow}. {str(i)}\n"
+                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(i)}\n"
+            else:
+                break
         if assignment_count_today > 0:
             embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
         else:
@@ -143,16 +145,13 @@ async def assignments(ctx):
     assignment_count = 0
     assignments = return_assignments(channel_name)
     title_url = return_url(channel_name)
-    dates = []
     embed = discord.Embed(
         title ="📝 Assignments",
         url = title_url,
         color = 0x32CD30)
-    for i in assignments: # combine into one loop ?
-        dates.append(utc_to_pst(i.due_at_date, "include_hour"))
-    for i in range(len(dates)):
+    for i in assignments:
         assignment_count += 1
-        embed.add_field(name = f"{assignment_count}. {str(assignments[i])}", value = f"Due: {dates[i]}", inline = False)
+        embed.add_field(name = f"{assignment_count}. {i}", value = f'Due: {utc_to_pst(i.due_at_date, "include_hour")}', inline = False)
     await ctx.send(embed=embed)
 
 # -source | returns github
