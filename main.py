@@ -61,6 +61,7 @@ async def on_ready():
 
 async def check_daily_reminder():
     while True:
+        print(str(strftime("%H:%M")))               # debugging 
         if str(strftime("%H:%M")) == "15:30":
             daily_reminder.start("DONT REMOVE THIS PARAMTER DONT KNOW WHY")
             break
@@ -70,7 +71,6 @@ async def check_daily_reminder():
 @tasks.loop(hours = 24)
 async def daily_reminder(ctx):
     for i in range (1, int(len(IDS)/2+1), 1):
-        print(str(strftime("%H:%M")))               # adding for debugging 
         channel_id = IDS["CHANNEL_ID_"+str(i)]
         channel = client.get_channel(channel_id) 
         assignment_count_today = 0
@@ -84,7 +84,7 @@ async def daily_reminder(ctx):
             order_by = 'due_at')
         embed = discord.Embed(
         title = f"⏰ Daily Reminder {today}",
-        color = 0xFFFF00)
+        color = 0xFFFF00,)
         for i in assignments:
             if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
                 inner_value_today += str(i) + "\n"
@@ -100,6 +100,7 @@ async def daily_reminder(ctx):
             embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         else:
             embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
+        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
         await channel.send(embed=embed)
 
 # -commands | returns list of commands
