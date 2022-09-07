@@ -60,8 +60,7 @@ async def on_ready():
     await check_daily_reminder()
 
 async def check_daily_reminder():
-    while True:
-        print(str(strftime("%H:%M")))               # debugging 
+    while True: 
         if str(strftime("%H:%M")) == "15:30":
             daily_reminder.start("DONT REMOVE THIS PARAMTER DONT KNOW WHY")
             break
@@ -87,11 +86,11 @@ async def daily_reminder(ctx):
         color = 0xFFFF00,)
         for i in assignments:
             if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
-                inner_value_today += str(i) + "\n"
                 assignment_count_today += 1 
+                inner_value_today += f"{assignment_count_today}. {str(i)}\n"
             if str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"): # find way to break after it fails
-                inner_value_tomorrow += str(i) + "\n"
                 assignment_count_tomorrow += 1
+                inner_value_tomorrow += f"{assignment_count_tomorrow}. {str(i)}\n"
         if assignment_count_today > 0:
             embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
         else:
@@ -100,7 +99,7 @@ async def daily_reminder(ctx):
             embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         else:
             embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
-        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
+        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTIONS 8")
         await channel.send(embed=embed)
 
 # -commands | returns list of commands
@@ -141,6 +140,7 @@ async def due(ctx):
 @client.command()
 async def assignments(ctx):
     channel_name = ctx.message.guild.name
+    assignment_count = 0
     assignments = return_assignments(channel_name)
     title_url = return_url(channel_name)
     dates = []
@@ -151,14 +151,14 @@ async def assignments(ctx):
     for i in assignments: # combine into one loop ?
         dates.append(utc_to_pst(i.due_at_date, "include_hour"))
     for i in range(len(dates)):
-        embed.add_field(name = str(assignments[i]), value = f"Due: {dates[i]}", inline = False)
+        assignment_count += 1
+        embed.add_field(name = f"{assignment_count}. {str(assignments[i])}", value = f"Due: {dates[i]}", inline = False)
     await ctx.send(embed=embed)
-
 # -source | returns github
 @client.command()
 async def source(ctx):
     embed = discord.Embed(
-        title ="🐱‍👤 Source Code",
+        title ="🐈‍⬛ Source Code",
         description = 'If you have a suggestion or come across a bug, make an issue / pull request or message me',
         url = "https://github.com/BrandonAWong/canvas",
         color = 0x333)
