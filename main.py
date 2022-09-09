@@ -21,12 +21,17 @@ canvas = Canvas(API_URL, API_KEY)
 # 1 - CECS 174 | 2 - 
 IDS = {
     "COURSE_ID_1" : 3224,                   # change COURSE_ID per course
-    "CHANNEL_ID_1" : 1011740189682581618    # snowflake | change according to where you want messages to default
+    "CHANNEL_ID_1" : 1011740189682581618,    # snowflake | change according to where you want messages to default
+
+    "COURSE_ID_2" : 3224,
+    "CHANNEL_ID_2" : 1015747008641900624
     } 
 
 def return_course_id(channel_name):
     if channel_name == "CECS 174":
         return IDS["COURSE_ID_1"]
+    elif channel_name == "CECS 174 (FALL 2022)":
+        return IDS["COURSE_ID_2"]
 
 def return_course(channel_name):
     id = return_course_id(channel_name)
