@@ -18,9 +18,9 @@ client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
 canvas = Canvas(API_URL, API_KEY)
 
-# 1 - CECS 174 | 2 - 
+# 1 - CECS 174 | 2 - CECS 174
 IDS = {
-    "COURSE_ID_1" : 3224,                   # change COURSE_ID per course
+    "COURSE_ID_1" : 3224,                    # change COURSE_ID per course
     "CHANNEL_ID_1" : 1011740189682581618,    # snowflake | change according to where you want messages to default
 
     "COURSE_ID_2" : 3224,
@@ -41,7 +41,7 @@ def return_course(channel_name):
 def return_assignments(channel_name):
     course = return_course(channel_name)
     assignments = course.get_assignments(
-        bucket = 'upcoming', 
+        bucket = 'future', 
         order_by = 'due_at')
     return assignments
 
@@ -74,7 +74,7 @@ async def check_daily_reminder():
 # daily_reminder | returns what's due today and tomorrow
 @tasks.loop(hours = 24)
 async def daily_reminder(ctx):
-    for i in range (1, int(len(IDS)/2+1), 1):
+    for i in range (1, int(len(IDS)/2+1)):
         channel_id = IDS["CHANNEL_ID_"+str(i)]
         channel = client.get_channel(channel_id) 
         assignment_count_today = 0
@@ -89,23 +89,25 @@ async def daily_reminder(ctx):
         embed = discord.Embed(
         title = f"⏰ Daily Reminder {today}",
         color = 0xFFFF00)
-        for i in assignments:
-            if str(datetime.date.today()) == utc_to_pst(i.due_at_date, "no_include_hour"):
+        for assignment in assignments:
+            due_date = utc_to_pst(assignment.due_at_date, "no_include_hour")
+            due_hour = str(utc_to_pst(assignment.due_at_date, "include_hour")).split()[1]
+            if str(datetime.date.today()) == due_date:
                 assignment_count_today += 1 
-                inner_value_today += f"\n{assignment_count_today}. {str(i)}\n"
-            elif str(datetime.date.today() + datetime.timedelta(days=1)) == utc_to_pst(i.due_at_date, "no_include_hour"):
+                inner_value_today += f"\n{assignment_count_today}. {str(assignment)}\nDue at {due_hour}\n"
+            elif str(datetime.date.today() + datetime.timedelta(days=1)) == due_date:
                 assignment_count_tomorrow += 1
-                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(i)}\n"
+                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(assignment)}\nDue at {due_hour}\n"
             else:
                 break
         if assignment_count_today > 0:
             embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
         else:
-            embed.add_field(name = "Assignments Due Today", value = "Nothing due today!", inline = False)
+            embed.add_field(name = "Assignments Due Today", value = "Nothing due today 🥳", inline = False)
         if assignment_count_tomorrow > 0:
             embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         else:
-            embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow!", inline = False)
+            embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow 🎉", inline = False)
         embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
         await channel.send(embed=embed)
 
@@ -124,23 +126,27 @@ async def commands(ctx):
 @client.command()
 async def due(ctx):
     channel_name = ctx.message.guild.name
-    assignment = return_assignments(channel_name)[0]
-    title_url = return_url(channel_name)
-    date = utc_to_pst(assignment.due_at_date, "include_hour")
-    lock_date = utc_to_pst(assignment.lock_at_date, "include_hour")
-    points = assignment.points_possible
-    description = assignment.description # returns HTML
-    bad_characters = ["<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
-    for i in bad_characters:
-        description = description.replace(i, "")
-    embed = discord.Embed(
-        title = f"📅 {str(assignment)}",
-        url = title_url,
-        color = 0xF4364C)
-    embed.add_field(name = f"Due: {date}", value = f"Locks at: {lock_date}\n"
-                                                   f"Points: {points}\n"
-                                                   f"\n{description}")
-
+    try:
+        assignment = return_assignments(channel_name)[0]
+        title_url = return_url(channel_name)
+        date = utc_to_pst(assignment.due_at_date, "include_hour")
+        lock_date = utc_to_pst(assignment.lock_at_date, "include_hour")
+        points = assignment.points_possible
+        description = assignment.description # returns HTML
+        bad_characters = ["<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
+        for character in bad_characters:
+            description = description.replace(character, "")
+        embed = discord.Embed(
+            title = f"📅 {str(assignment)}",
+            url = title_url,
+            color = 0xF4364C)
+        embed.add_field(name = f"Due: {date}", value = f"Locks at: {lock_date}\n"
+                                                    f"Points: {points}\n"
+                                                    f"\n{description}")
+    except:
+        embed = discord.Embed(
+            title = f"~ Nothing Due ~",
+            color = 0xF4364C)
     await ctx.send(embed=embed)
 
 # -assignments | returns list of assignments
@@ -154,9 +160,12 @@ async def assignments(ctx):
         title ="📝 Assignments",
         url = title_url,
         color = 0x32CD30)
-    for i in assignments:
-        assignment_count += 1
-        embed.add_field(name = f"{assignment_count}. {i}", value = f'Due: {utc_to_pst(i.due_at_date, "include_hour")}', inline = False)
+    for assignment in assignments:
+        try:
+            assignment_count += 1
+            embed.add_field(name = f"{assignment_count}. {assignment}", value = f'Due: {utc_to_pst(assignment.due_at_date, "include_hour")}', inline = False)
+        except:
+            assignment_count -=1
     await ctx.send(embed=embed)
 
 # -source | returns github
