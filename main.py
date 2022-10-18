@@ -9,7 +9,7 @@ import datetime
 import asyncio
 
 load_dotenv()
-
+# TODO : add random fact of the day :  ^  )
 API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
 
@@ -106,8 +106,8 @@ async def daily_reminder(ctx):
         if assignment_count_tomorrow == 0:
             inner_value_tomorrow = "Nothing due tomorrow 🎉"
 
-        embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
+        embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
         embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
         await channel.send(embed=embed)
 
