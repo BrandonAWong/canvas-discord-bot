@@ -94,20 +94,20 @@ async def daily_reminder(ctx):
             due_hour = str(utc_to_pst(assignment.due_at_date, "include_hour")).split()[1]
             if str(datetime.date.today()) == due_date:
                 assignment_count_today += 1 
-                inner_value_today += f"\n{assignment_count_today}. {str(assignment)}\nDue at {due_hour}\n"
+                inner_value_today += f"\n{assignment_count_today}. {str(assignment)}\n   Due at {due_hour}\n"
             elif str(datetime.date.today() + datetime.timedelta(days=1)) == due_date:
                 assignment_count_tomorrow += 1
-                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(assignment)}\nDue at {due_hour}\n"
+                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(assignment)}\n   Due at {due_hour}\n"
             else:
                 break
-        if assignment_count_today > 0:
-            embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
-        else:
-            embed.add_field(name = "Assignments Due Today", value = "Nothing due today 🥳", inline = False)
-        if assignment_count_tomorrow > 0:
-            embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
-        else:
-            embed.add_field(name = "Assignments Due Tomorrow", value = "Nothing due tomorrow 🎉", inline = False)
+
+        if assignment_count_today == 0:
+            inner_value_today = "Nothing due today 🥳"
+        if assignment_count_tomorrow == 0:
+            inner_value_tomorrow = "Nothing due tomorrow 🎉"
+
+        embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
+        embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
         embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
         await channel.send(embed=embed)
 
