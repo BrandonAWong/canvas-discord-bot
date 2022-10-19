@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 import os
 import datetime
 import asyncio
+import random
 
 load_dotenv()
-# TODO : add random fact of the day :  ^  )
+
 API_URL = "https://csulb.instructure.com/"
 API_KEY = os.getenv("API_KEY")
 
@@ -108,7 +109,13 @@ async def daily_reminder(ctx):
 
         embed.add_field(name = "Assignments Due Today", value = inner_value_today, inline = False)
         embed.add_field(name = "Assignments Due Tomorrow", value = inner_value_tomorrow, inline = False)
-        embed.set_footer(text = "DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8")
+
+        file = open("facts.txt", "r")
+        facts = file.read().splitlines()
+        fact = random.choice(facts)
+        file.close()
+
+        embed.set_footer(text = f"DISCLAIMNER: LAB DUE DATES ARE ONLY CORRECT FOR SECTION 8\n\nFACT OF THE DAY 🤓\n{fact}")
         await channel.send(embed=embed)
 
 # -commands | returns list of commands
