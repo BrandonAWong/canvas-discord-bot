@@ -90,7 +90,7 @@ async def daily_reminder(ctx):
             bucket = 'upcoming', 
             order_by = 'due_at')
         embed = discord.Embed(
-        title = f"⏰ Daily Reminder {today}",
+        title = f"⏰ {today}",
         color = 0xFFFF00)
         for assignment in assignments:
             due_date = utc_to_pst(assignment.due_at_date, "no_include_hour")
@@ -129,6 +129,7 @@ async def commands(ctx):
     embed.add_field(name = "-due", value = "returns an assignment that should be priortized as it will be due soon", inline = False)
     embed.add_field(name = "-assignments", value = "returns a list of all upcoming assignments", inline = False)
     embed.add_field(name = "-source", value = "returns a link to source code", inline = False)
+    embed.add_field(name = "-initialize", value = "intializes the server to recieve daily reminders", inline = False)
     await ctx.send(embed=embed)
 
 # -due | returns an upcoming assignment
@@ -187,5 +188,14 @@ async def source(ctx):
         color = 0x333)
     embed.set_footer(icon_url = "https://cdn.discordapp.com/attachments/1016129238862135396/1016151538923733012/unknown.png", text = "Brandon#4704")
     await ctx.send(embed=embed)
+
+# -initialize | checks to see if server has been hard coded in
+@client.command()
+async def initialize(ctx):
+    channel_name = ctx.message.guild.name
+    if return_course_id(channel_name):
+        await ctx.message.channel.send("Server Intialized ✅")
+    else:
+        await ctx.message.channel.send("Initialization Failed ❌\nMessage Brandon#4704")
 
 client.run(DISCORD_CLIENT)
