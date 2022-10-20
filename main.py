@@ -53,7 +53,9 @@ def return_url(channel_name):
 # convert utc to pst
 def utc_to_pst(utc, format):
     if format == "include_hour":
-        date_format = '%m/%d %H:%M'
+        date_format = '%m/%d %I:%M %p'
+    elif format == "only_hour":
+        date_format = '%I:%M %p'
     else: 
         date_format = '%Y-%m-%d'
     date = utc.astimezone(timezone('US/Pacific'))
@@ -82,7 +84,7 @@ async def daily_reminder(ctx):
         assignment_count_tomorrow = 0
         inner_value_today = ""
         inner_value_tomorrow = ""
-        today = strftime("%m-%d")
+        today = strftime("%A %m-%d")
         course = canvas.get_course(IDS["COURSE_ID_"+str(i)])
         assignments = course.get_assignments(
             bucket = 'upcoming', 
@@ -92,13 +94,13 @@ async def daily_reminder(ctx):
         color = 0xFFFF00)
         for assignment in assignments:
             due_date = utc_to_pst(assignment.due_at_date, "no_include_hour")
-            due_hour = str(utc_to_pst(assignment.due_at_date, "include_hour")).split()[1]
+            due_hour = str(utc_to_pst(assignment.due_at_date, "only_hour"))
             if str(datetime.date.today()) == due_date:
                 assignment_count_today += 1 
-                inner_value_today += f"\n{assignment_count_today}. {str(assignment)}\n   Due at {due_hour}\n"
+                inner_value_today += f"\n{assignment_count_today}. {str(assignment)}\n~  Due at {due_hour}\n"
             elif str(datetime.date.today() + datetime.timedelta(days=1)) == due_date:
                 assignment_count_tomorrow += 1
-                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(assignment)}\n   Due at {due_hour}\n"
+                inner_value_tomorrow += f"\n{assignment_count_tomorrow}. {str(assignment)}\n~  Due at {due_hour}\n"
             else:
                 break
 
@@ -140,7 +142,7 @@ async def due(ctx):
         lock_date = utc_to_pst(assignment.lock_at_date, "include_hour")
         points = assignment.points_possible
         description = assignment.description # returns HTML
-        bad_characters = ["<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
+        bad_characters = ["<div>", "</div>", "<span>", "</span>", "<ul>", "</ul>", "<li>", "</li>", "<strong>", "</strong>", "<p>", "</p>", "&nbsp", ";"]
         for character in bad_characters:
             description = description.replace(character, "")
         embed = discord.Embed(
