@@ -69,7 +69,7 @@ async def on_ready():
 
 async def check_daily_reminder():
     while True: 
-        if str(strftime("%H:%M")) == "15:30":
+        if str(strftime("%H:%M")) == "16:30":
             daily_reminder.start("DONT REMOVE THIS PARAMTER DONT KNOW WHY")
             break
         await asyncio.sleep(60)
