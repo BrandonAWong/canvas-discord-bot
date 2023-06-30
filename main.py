@@ -11,25 +11,12 @@ bot = commands.Bot(command_prefix='-',
 
 @bot.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(bot))
     await load_cogs(bot)
-
-async def load_cogs(bot):
+    print('We have logged in as {0.user}'.format(bot))
+    
+async def load_cogs(bot: commands.Bot) -> None:
     for file in os.listdir('./Cogs'):
         if file.endswith('.py'):
             await bot.load_extension(f'Cogs.{file[:-3]}')
-
-@bot.command()
-@commands.is_owner() 
-async def sync(ctx):
-    await bot.tree.sync()
-    await ctx.reply('synced')
-
-@bot.command()
-@commands.is_owner() 
-async def clearTree(ctx):
-    bot.tree.clear_commands(guild=None)
-    await bot.tree.sync()
-    await ctx.reply('cleared and synced')
 
 bot.run(DISCORD_CLIENT)
