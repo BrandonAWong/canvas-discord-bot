@@ -8,14 +8,14 @@ from util import *
 
 
 class Reminder(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         with open('./text/facts.txt', 'r') as file:
             self.facts = file.read().splitlines()
         with open('./text/quotes.txt', 'r') as file:
             self.quotes = file.read().splitlines()
 
-    async def check_daily_reminder(self):
+    async def check_daily_reminder(self) -> None:
         while True: 
             if str(strftime('%H:%M')) == '16:30':
                 self.daily_reminder.start('hello')
@@ -23,7 +23,7 @@ class Reminder(commands.Cog):
             await asyncio.sleep(60)
 
     @tasks.loop(hours=24)
-    async def daily_reminder(self, ctx):
+    async def daily_reminder(self, ctx: commands.Context) -> None:
         for i in range (1, int(len(IDS)/2+1)):
             channel_id = IDS['CHANNEL_ID_'+str(i)]
             channel = self.bot.get_channel(channel_id) 

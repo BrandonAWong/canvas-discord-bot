@@ -5,7 +5,6 @@ import os
 
 
 load_dotenv()
-
 API_URL = 'https://csulb.instructure.com/'
 API_KEY = os.getenv('API_KEY')
 canvas = Canvas(API_URL, API_KEY)

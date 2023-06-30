@@ -5,7 +5,7 @@ from discord.ext import commands
 
 
 class Admin(commands.GroupCog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @app_commands.command(name='commands', description='Gives list of admin commands')
@@ -31,7 +31,7 @@ class Admin(commands.GroupCog):
     @app_commands.checks.has_permissions(administrator=True)
     async def initialize(self, interaction: discord.Interaction, org: str, course_id: str, token: str) -> None:
         channel_id = interaction.guild.id
-        course_id: int = int(course_id)
+        course_id = int(course_id)
         if channel_id:
             embed = discord.Embed(
                 title = 'Server Intialized ✔',
