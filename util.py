@@ -1,43 +1,47 @@
 from canvasapi import Canvas
-from dotenv import load_dotenv
 from pytz import timezone
-import os
+import sqlite3
 
 
-load_dotenv()
-API_URL = 'https://csulb.instructure.com/'
-API_KEY = os.getenv('API_KEY')
-canvas = Canvas(API_URL, API_KEY)
+def create_connection() -> sqlite3.Connection | sqlite3.Cursor:
+    con: sqlite3.Connection = sqlite3.connect('servers.db')
+    cur: sqlite3.Cursor = con.cursor()
+    return con, cur
 
-# 1 - CECS 174 | 2 - CECS 174
-IDS = {
-    'COURSE_ID_1' : 31686,                    # change COURSE_ID per course
-    'CHANNEL_ID_1' : 987096406214979634,      # snowflake | change according to where you want messages to default
+def upload_row(server_id: int, org: str, course_id: int, token: str) -> None:
+    con, cur = create_connection()
+    if cur.execute(f"SELECT org FROM server WHERE server_id = {server_id}").fetchone():
+        cur.execute(f"DELETE FROM server WHERE server_id = {server_id}")
+    cur.execute("INSERT INTO server VALUES (?, ?, ?, ?)",
+                (server_id, org, course_id, token))
+    con.commit()
+    con.close()
 
-    'COURSE_ID_2' : 3224,
-    'CHANNEL_ID_2' : 1015747008641900624
-    } 
+def create_canvas(server_id: int) -> Canvas:
+    con, cur = create_connection()
+    url, key = cur.execute("SELECT server_id, org, course_id, token"  
+                           f"FROM server WHERE server_id = {server_id}")
+    con.close()
+    return Canvas(url, key)
 
-def return_course_id(channel_name):
-    if channel_name == 'personal file':
-        return IDS['COURSE_ID_1']
-    elif channel_name == 'CECS 174 (FALL 2022)':
-        return IDS['COURSE_ID_2']
-
-def return_course(channel_name):
-    id = return_course_id(channel_name)
-    return canvas.get_course(id)
-
-def return_assignments(channel_name):
-    course = return_course(channel_name)
+def return_assignments(server_id) -> list:
+    con, cur = create_connection()
+    canvas = create_canvas(server_id)
+    course_id: int = cur.execute("SELECT course_id FROM server" 
+                        f"WHERE server_id = {server_id}")
+    course = canvas.get_course(course_id)
     assignments = course.get_assignments(
         bucket = 'future', 
         order_by = 'due_at')
+    con.close()
     return assignments
 
-def return_url(channel_name):
-    id = return_course_id(channel_name)
-    return f'{API_URL}courses/{id}/assignments'
+def return_url(server_id):
+    con, cur = create_connection()
+    org, id = cur.execute("SELECT org, course_id FROM server"
+                                f"WHERE server_id = {server_id}")
+    con.close()
+    return f'https://{org}.instructure.com/courses/{id}/assignments'
 
 def utc_to_pst(utc, format):
     if format == 'include_hour':
