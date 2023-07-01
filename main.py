@@ -3,16 +3,17 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 
+
 load_dotenv()
 DISCORD_CLIENT = os.getenv('DISCORD_CLIENT')
-bot = commands.Bot(command_prefix='-', 
-                      owner_id=213366077852221441, 
-                      intents=discord.Intents.all())
+bot = commands.Bot(command_prefix='-',  
+                    intents=discord.Intents.all())
+bot.remove_command('help')
 
 @bot.event
-async def on_ready():
+async def on_ready() -> None:
     await load_cogs(bot)
-    print('We have logged in as {0.user}'.format(bot))
+    print(f'We have logged in as {bot.user}')
     
 async def load_cogs(bot: commands.Bot) -> None:
     for file in os.listdir('./Cogs'):
