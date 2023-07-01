@@ -4,41 +4,47 @@ from util import *
 
 
 class UserCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='commands-list', description='Lists sharko\'s commands',)
-    async def commands_list(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(name='help', description='Gives a list of commands')
+    async def help(self, ctx: commands.Context) -> None:
         embed = discord.Embed(
             title = '🐧 Help',
             color = 0x68BBE3)
-        embed.add_field(name = '-due', value = 'returns an assignment that will be due soon', inline = False)
-        embed.add_field(name = '-assignments', value = 'returns a list of all upcoming assignments', inline = False)
-        embed.add_field(name = '-source', value = 'returns a link to source code', inline = False)
+        embed.add_field(name = '-due', 
+                        value = 'returns an assignment that will be due soon', 
+                        inline = False)
+        embed.add_field(name = '-assignments', 
+                        value = 'returns a list of upcoming assignments', 
+                        inline = False)
+        embed.add_field(name = '-source', 
+                        value = 'returns a link to source code', 
+                        inline = False)
         embed.set_footer(text = 'Slash commands also work!')
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name='due', description='Gives details about an upcoming assignment')
     async def due(self, ctx: commands.Context):
-        channel_name = ctx.message.guild.name
-        try:
-            assignment = return_assignments(channel_name)[0]
-            title_url = return_url(channel_name)
-            date = utc_to_pst(assignment.due_at_date, 'include_hour')
-            points = assignment.points_possible
-            description = assignment.description[0:1023]
-            bad_characters = ['<div>', '</div>', '<span>', '</span>', '<ul>', 
+        await ctx.defer()
+        channel_id: int = ctx.message.guild.id
+        assignments: list = return_assignments(channel_id)
+        if assignments:
+            assignment = assignments[0]
+            description: str = assignment.description[0:1023]
+            bad_characters: tuple = ('<div>', '</div>', '<span>', '</span>', '<ul>', 
                             '</ul>', '<li>', '</li>', '<strong>', '</strong>', 
-                            '<p>', '</p>', '<em>', '</em>', '&nbsp', ';']
+                            '<p>', '</p>', '<em>', '</em>', '&nbsp', ';')
             for character in bad_characters:
                 description = description.replace(character, '')
             embed = discord.Embed(
                 title = f'📅 {str(assignment)}',
-                url = title_url,
+                url = return_assignments_url(channel_id),
                 color = 0xF4364C)
-            embed.add_field(name = f'Due: {date}', 
-                            value = f'Points: {points}\n\n{description}')
-        except:
+            embed.add_field(name = f'Due: {return_due_date(assignment)}', 
+                            value = f'Points: {assignment.points_possible}\n'
+                                    f'\n{description}')
+        else:
             embed = discord.Embed(
                 title = f'~ Nothing Due ~',
                 color = 0xF4364C)
@@ -46,25 +52,22 @@ class UserCommands(commands.Cog):
 
     @commands.hybrid_command(name='assignments', description='Lists out upcoming assignments')
     async def assignments(self, ctx: commands.Context) -> None:
-        channel_name = ctx.message.guild.name
-        assignment_count = 0
-        assignments = return_assignments(channel_name)
-        title_url = return_url(channel_name)
+        await ctx.defer()
+        channel_id: int = ctx.message.guild.id
+        assignments: list = return_assignments(channel_id)
         embed = discord.Embed(
             title ='📝 Assignments',
-            url = title_url,
+            url = return_assignments_url(channel_id),
             color = 0x32CD30)
-        for assignment in assignments:
-            try:
-                assignment_count += 1
-                embed.add_field(name = f'{assignment_count}. {assignment}', 
-                                value = f'Due: {utc_to_pst(assignment.due_at_date, "include_hour")}', 
-                                inline = False)
-            except:
-                assignment_count -=1
+        for i, assignment in enumerate(assignments):
+            if i >= 5:
+                break
+            embed.add_field(name = f'{i+1}. {assignment}', 
+                            value = f'Due: {return_due_date(assignment)}', 
+                            inline = False)
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name='source', description='Returns a link to sharko\'s source code')
+    @commands.hybrid_command(name='source', description='Returns a link to source code')
     async def source(self, ctx: commands.Context) -> None:
         embed = discord.Embed(
             title = '🐈‍⬛ Source Code',
