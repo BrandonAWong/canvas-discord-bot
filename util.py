@@ -2,20 +2,27 @@ from canvasapi import Canvas
 from pytz import timezone
 import sqlite3
 
-
 def create_connection() -> sqlite3.Connection | sqlite3.Cursor:
     con: sqlite3.Connection = sqlite3.connect('servers.db')
     cur: sqlite3.Cursor = con.cursor()
     return con, cur
 
-def upload_row(server_id: int, org: str, course_id: int, token: str) -> None:
+def upload_row(server_id: int, channel_id: int, org: str, course_id: int, token: str) -> bool:
     con, cur = create_connection()
     if cur.execute(f"SELECT org FROM server WHERE server_id = {server_id}").fetchone():
         cur.execute(f"DELETE FROM server WHERE server_id = {server_id}")
-    cur.execute("INSERT INTO server VALUES (?, ?, ?, ?)",
-                (server_id, org, course_id, token))
+    cur.execute("INSERT INTO server VALUES (?, ?, ?, ?, ?)",
+                (server_id, channel_id, org, course_id, token))
     con.commit()
     con.close()
+    return validate_upload(server_id, course_id)
+    
+def validate_upload(server_id: int, course_id: int) -> bool:
+    try:
+        create_canvas(server_id).get_course(course_id)
+        return True
+    except:
+        return False
 
 def create_canvas(server_id: int) -> Canvas:
     con, cur = create_connection()
@@ -50,7 +57,7 @@ def return_due_date(assignment):
     except:
         date = 'No Due Date'
     return date
-
+# too lazy to fix this
 def utc_to_pst(utc, format):
     if format == 'include_hour':
         date_format = '%m/%d %I:%M %p'

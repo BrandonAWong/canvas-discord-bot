@@ -9,7 +9,7 @@ class Admin(commands.GroupCog):
         self.bot = bot
         self.help_link = 'https://docs.google.com/document/d/17O27VwJ_KlOzfie85Enp58lcKrB0LOo0rgvrY4XqJCE/edit'
 
-    @app_commands.command(name='help', description='Gives list of admin commands')
+    @app_commands.command(name='help', description='Gives a list of admin commands')
     @app_commands.checks.has_permissions(administrator=True)
     async def help(self, interaction: discord.Interaction) -> None:
         embed = discord.Embed(
@@ -35,15 +35,12 @@ class Admin(commands.GroupCog):
     @app_commands.command(name='initialize', description='First time setup for bot')
     @app_commands.checks.has_permissions(administrator=True)
     async def initialize(self, interaction: discord.Interaction, org: str, course_id: str, token: str) -> None:
-        try:
-            channel_id = interaction.guild.id
-            course_id = int(course_id)
-            upload_row(channel_id, org, course_id, token)
+        status = upload_row(interaction.guild_id, interaction.channel_id, org, int(course_id), token)
+        if status:
             embed = discord.Embed(
                 title = 'Server Intialized ✔',
                 color = 0x00FF00)
-        except Exception as e:
-            print(e)
+        else:
             embed = discord.Embed(
                 title = 'Initialization Failed ❌',
                 url = self.help_link,
