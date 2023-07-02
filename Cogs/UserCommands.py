@@ -29,7 +29,7 @@ class UserCommands(commands.Cog):
         await ctx.defer()
         channel_id: int = ctx.message.guild.id
         assignments: list = return_assignments(channel_id)
-        if assignments:
+        if len(list(assignments)) > 0:
             assignment = assignments[0]
             description: str = assignment.description[0:1023]
             bad_characters: tuple = ('<div>', '</div>', '<span>', '</span>', '<ul>', 
