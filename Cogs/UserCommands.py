@@ -27,8 +27,8 @@ class UserCommands(commands.Cog):
     @commands.hybrid_command(name='due', description='Gives details about an upcoming assignment')
     async def due(self, ctx: commands.Context):
         await ctx.defer()
-        channel_id: int = ctx.message.guild.id
-        assignments: list = return_assignments(channel_id)
+        server_id: int = ctx.message.guild.id
+        assignments: list = return_assignments(server_id)
         if len(list(assignments)) > 0:
             assignment = assignments[0]
             description: str = assignment.description[0:1023]
@@ -39,7 +39,7 @@ class UserCommands(commands.Cog):
                 description = description.replace(character, '')
             embed = discord.Embed(
                 title = f'📅 {str(assignment)}',
-                url = return_assignments_url(channel_id),
+                url = return_assignments_url(server_id),
                 color = 0xF4364C)
             embed.add_field(name = f'Due: {return_due_date(assignment)}', 
                             value = f'Points: {assignment.points_possible}\n'
@@ -53,15 +53,13 @@ class UserCommands(commands.Cog):
     @commands.hybrid_command(name='assignments', description='Lists out upcoming assignments')
     async def assignments(self, ctx: commands.Context) -> None:
         await ctx.defer()
-        channel_id: int = ctx.message.guild.id
-        assignments: list = return_assignments(channel_id)
+        server_id: int = ctx.message.guild.id
+        assignments: list = return_assignments(server_id)
         embed = discord.Embed(
             title ='📝 Assignments',
-            url = return_assignments_url(channel_id),
+            url = return_assignments_url(server_id),
             color = 0x32CD30)
         for i, assignment in enumerate(assignments):
-            if i >= 5:
-                break
             embed.add_field(name = f'{i+1}. {assignment}', 
                             value = f'Due: {return_due_date(assignment)}', 
                             inline = False)
