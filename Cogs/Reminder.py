@@ -21,7 +21,7 @@ class Reminder(commands.Cog):
             self.daily_reminder.start()
             self.start_daily_reminder.cancel()
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(hours=24)
     async def daily_reminder(self, ctx: commands.Context=None) -> None:
         server_ids: list[tuple] = return_server_ids()
         channel_ids: list[tuple] = return_channel_ids()
@@ -49,7 +49,7 @@ class Reminder(commands.Cog):
             embed = discord.Embed(
                 title = f'⏰ {strftime("%A %m-%d")}',
                 color = 0xFFFF00)
-            embed.add_field(name = return_course(server_ids[i][0]),
+            embed.add_field(name = return_coursehkpoh(server_ids[i][0]),
                             value = '\n')
             embed.add_field(name = 'Assignments Due Today',
                             value = inner_value_today, 
