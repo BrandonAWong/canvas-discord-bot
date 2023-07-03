@@ -17,12 +17,12 @@ class Reminder(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def start_daily_reminder(self) -> None:
-        if str(strftime('%H:%M')) == '08:30' or True:
+        if str(strftime('%H:%M')) == '08:30':
             self.daily_reminder.start()
             self.start_daily_reminder.cancel()
 
     @tasks.loop(hours=24)
-    async def daily_reminder(self, ctx: commands.Context=None) -> None:
+    async def daily_reminder(self) -> None:
         server_ids: list[tuple] = return_server_ids()
         channel_ids: list[tuple] = return_channel_ids()
         for i in range(len(server_ids)):
@@ -47,7 +47,6 @@ class Reminder(commands.Cog):
                 inner_value_today = 'Nothing due today 🥳'
             if assignment_count_tomorrow == 0:
                 inner_value_tomorrow = 'Nothing due tomorrow 🤩'
-
 
             course = return_course(server_ids[i][0]).name
             embed = discord.Embed(
