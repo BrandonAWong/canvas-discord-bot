@@ -38,7 +38,7 @@ class UserCommands(commands.Cog):
             for character in bad_characters:
                 description = description.replace(character, '')
             embed = discord.Embed(
-                title = f'📅 {str(assignment)}',
+                title = f'📅 {assignment.name}',
                 url = return_assignments_url(server_id),
                 color = 0xF4364C)
             embed.add_field(name = f'Due: {return_due_date(assignment)}', 
@@ -56,12 +56,12 @@ class UserCommands(commands.Cog):
         server_id: int = ctx.message.guild.id
         assignments: list = return_assignments(server_id)
         embed = discord.Embed(
-            title ='📝 Assignments',
+            title = '📝 Assignments',
             url = return_assignments_url(server_id),
             color = 0x32CD30)
         for i, assignment in enumerate(assignments):
-            embed.add_field(name = f'{i+1}. {assignment}', 
-                            value = f'Due: {return_due_date(assignment)}', 
+            embed.add_field(name = f'{i+1}. {assignment.name}', 
+                            value = f'Due: {assignment.name}', 
                             inline = False)
         await ctx.reply(embed=embed)
 

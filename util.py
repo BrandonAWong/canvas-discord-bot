@@ -24,7 +24,7 @@ def validate_upload(server_id: int) -> bool:
     except:
         return False
 
-def delete_row(server_id):
+def delete_row(server_id) -> None:
     con, cur = create_connection()
     cur.execute(f"DELETE FROM server WHERE server_id = {server_id}")
     con.commit()
@@ -52,7 +52,7 @@ def create_canvas(server_id: int) -> Canvas:
     con.close()
     return Canvas(url, key)
 
-def return_course(server_id: int) -> str:
+def return_course(server_id: int):
     con, cur = create_connection()
     canvas = create_canvas(server_id)
     res = cur.execute(f"SELECT course_id FROM server WHERE server_id = {server_id}")

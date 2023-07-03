@@ -34,10 +34,12 @@ class Reminder(commands.Cog):
                 due_hour = return_due_date(assignment)
                 if str(datetime.date.today()) == due_date:
                     assignment_count_today += 1 
-                    inner_value_today += f'\n{assignment_count_today}. {str(assignment)}\n~  Due at {due_hour}\n'
+                    inner_value_today += (f'\n{assignment_count_today}. '
+                                         f'{assignment.name}\n~  Due at {due_hour[-8:]}\n')
                 elif str(datetime.date.today() + datetime.timedelta(days=1)) == due_date:
                     assignment_count_tomorrow += 1
-                    inner_value_tomorrow += f'\n{assignment_count_tomorrow}. {str(assignment)}\n~  Due at {due_hour}\n'
+                    inner_value_tomorrow += (f'\n{assignment_count_tomorrow}. '
+                                             f'{assignment.name}\n~  Due at {due_hour[-8:]}\n')
                 else:
                     break
                 
@@ -46,10 +48,12 @@ class Reminder(commands.Cog):
             if assignment_count_tomorrow == 0:
                 inner_value_tomorrow = 'Nothing due tomorrow 🤩'
 
+
+            course = return_course(server_ids[i][0]).name
             embed = discord.Embed(
                 title = f'⏰ {strftime("%A %m-%d")}',
                 color = 0xFFFF00)
-            embed.add_field(name = return_course(server_ids[i][0]),
+            embed.add_field(name = course,
                             value = '\n')
             embed.add_field(name = 'Assignments Due Today',
                             value = inner_value_today, 
@@ -67,4 +71,4 @@ class Reminder(commands.Cog):
             await channel.send(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Reminder(bot)) 
+    await bot.add_cog(Reminder(bot))
