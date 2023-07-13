@@ -61,7 +61,7 @@ class UserCommands(commands.Cog):
             color = 0x32CD30)
         for i, assignment in enumerate(assignments):
             embed.add_field(name = f'{i+1}. {assignment.name}', 
-                            value = f'Due: {assignment.name}', 
+                            value = f'Due: {return_due_date(assignment)}', 
                             inline = False)
         await ctx.reply(embed=embed)
 

@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from time import strftime
-import datetime
+from datetime import date, timedelta
 import random
 from util import *
 
@@ -17,29 +16,34 @@ class Reminder(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def start_daily_reminder(self) -> None:
-        if str(strftime('%H:%M')) == '08:30':
-            self.daily_reminder.start()
-            self.start_daily_reminder.cancel()
-
-    @tasks.loop(hours=24)
-    async def daily_reminder(self) -> None:
+        r: list = []
+        now = discord.utils.utcnow()
+        now: str = now.strftime('%H:%M')
         server_ids: list[tuple] = return_server_ids()
-        channel_ids: list[tuple] = return_channel_ids()
+        times: list[tuple] = return_times()
         for i in range(len(server_ids)):
+            if now == times[i][0]:
+                r.append(server_ids[i][0])
+        await self.daily_reminder(r)
+
+    async def daily_reminder(self, servers: list) -> None:
+        channel_ids: list = return_channel_ids(servers)
+        for i in range(len(servers)):
             assignment_count_today = assignment_count_tomorrow = 0
             inner_value_today = inner_value_tomorrow = ''
-            assignments = return_assignments(server_ids[i][0])
+            server_id: int = servers[i]
+            assignments = return_assignments(server_id)
             for assignment in assignments:
-                due_date = utc_to_pst(assignment.due_at_date, 'no_include_hour')
-                due_hour = return_due_date(assignment)
-                if str(datetime.date.today()) == due_date:
+                due_date: str = assignment.due_at_date.strftime('%Y-%m-%d')
+                due_hour: str = return_due_hour(assignment)
+                if str(date.today()) == due_date:
                     assignment_count_today += 1 
                     inner_value_today += (f'\n{assignment_count_today}. '
-                                         f'{assignment.name}\n~  Due at {due_hour[-8:]}\n')
-                elif str(datetime.date.today() + datetime.timedelta(days=1)) == due_date:
+                                         f'{assignment.name}\n~  Due at {due_hour}\n')
+                elif str(date.today() + timedelta(days=1)) == due_date:
                     assignment_count_tomorrow += 1
                     inner_value_tomorrow += (f'\n{assignment_count_tomorrow}. '
-                                             f'{assignment.name}\n~  Due at {due_hour[-8:]}\n')
+                                             f'{assignment.name}\n~  Due at {due_hour}\n')
                 else:
                     break
                 
@@ -48,9 +52,9 @@ class Reminder(commands.Cog):
             if assignment_count_tomorrow == 0:
                 inner_value_tomorrow = 'Nothing due tomorrow 🤩'
 
-            course = return_course(server_ids[i][0]).name
+            course = return_course(server_id).name
             embed = discord.Embed(
-                title = f'⏰ {strftime("%A %m-%d")}',
+                title = f'⏰ {convert_tz(server_id, discord.utils.utcnow(), "%A %m-%d")}',
                 color = 0xFFFF00)
             embed.add_field(name = course,
                             value = '\n')
@@ -66,7 +70,7 @@ class Reminder(commands.Cog):
             else:
                 embed.set_footer(text = random.choice(self.quotes))
             
-            channel = self.bot.get_channel(channel_ids[i][0])
+            channel = self.bot.get_channel(channel_ids[i])
             await channel.send(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:

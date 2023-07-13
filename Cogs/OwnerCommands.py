@@ -1,5 +1,5 @@
 from discord.ext import commands
-from util import delete_row
+from util import delete_server
 
 
 class OwnerCommands(commands.Cog):
@@ -20,8 +20,8 @@ class OwnerCommands(commands.Cog):
         await ctx.reply('cleared and synced')
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, server) -> None:
-        delete_row(server.id)
+    async def on_guild_remove(self, server_id) -> None:
+        delete_server(server_id)
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(OwnerCommands(bot))
