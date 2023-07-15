@@ -102,6 +102,10 @@ The default time is 15:30 UTC.
 
 Ex. 08:30 or 22:30
 
+.. code::
+
+    /admin time-set time:08:30
+
 Example of finished command
 ###########################
 
