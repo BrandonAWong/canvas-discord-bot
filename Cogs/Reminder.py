@@ -22,22 +22,22 @@ class Reminder(commands.Cog):
         times: list[tuple] = return_times()
 
         for i, server in enumerate(server_ids):
+            server = server[0]
             _now = convert_tz(server, now, '%H:%M')
             if _now == times[i][0]:
                 r.append(server)
 
         await self.daily_reminder(r)
-    
+
     async def daily_reminder(self, servers: list[int]) -> None:
-        channel_ids: list[int] = return_channel_ids(servers)
         now: datetime = discord.utils.utcnow()
         
-        for i in range(len(servers)):
+        for server in servers:
             today: str = now.strftime('%Y-%m-%d')
             tomorrow: str = str(now + timedelta(days=1)).split()[0]
             assignment_count_today = assignment_count_tomorrow = 0
             inner_value_today = inner_value_tomorrow = ''
-            server_id: int = servers[i]
+            server_id: int = server
             assignments = return_assignments(server_id)
             
             for assignment in assignments:
@@ -91,7 +91,8 @@ class Reminder(commands.Cog):
             else:
                 embed.set_footer(text = random.choice(self.quotes))
             
-            channel = self.bot.get_channel(channel_ids[i])
+            channel_id = return_channel_id(server)
+            channel = self.bot.get_channel(channel_id)
             await channel.send(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
