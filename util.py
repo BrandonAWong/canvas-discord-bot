@@ -11,6 +11,7 @@ def create_connection() -> sqlite3.Connection | sqlite3.Cursor:
 def upload_row(server_id: int, channel_id: int, org: str, course_id: int, token: str) -> bool:
     con, cur = create_connection()
     preexist = False
+
     if cur.execute("SELECT org FROM server WHERE server_id = (?)", (server_id, )).fetchone():
         preexist = True
         cur.execute(("UPDATE server SET server_id = (?), channel_id = (?),"
@@ -20,9 +21,11 @@ def upload_row(server_id: int, channel_id: int, org: str, course_id: int, token:
         cur.execute("INSERT INTO server VALUES (?, ?, ?, ?, ?)",
                     (server_id, channel_id, org, course_id, token))
         cur.execute("INSERT INTO time VALUES (?, ?, ?)",
-                   (server_id, '08:30', 'UTC'))
+                   (server_id, '15:30', 'UTC'))
+        
     con.commit()
     con.close()
+
     if validate_upload(server_id):
         return True
     else:
@@ -39,8 +42,10 @@ def validate_upload(server_id: int) -> bool:
 
 def update_time(server_id: int, time: str) -> bool:
     con, cur = create_connection()
+    time = time.astimezone()
     cur.execute("UPDATE time SET time = (?) WHERE server_id = (?)",
                (time, server_id))
+    
     if validate_time(time):
         con.commit()
         con.close()
@@ -58,7 +63,7 @@ def validate_time(time) -> bool:
 
 def update_time_zone(server_id: int, tz: str) -> bool:
     con, cur = create_connection()
-    cur.execute("UPDATE time_zone SET time = (?) WHERE server_id = (?)",
+    cur.execute("UPDATE time SET time_zone = (?) WHERE server_id = (?)",
                (tz, server_id))
     if validate_time_zone(tz):
         con.commit()
@@ -95,7 +100,6 @@ def return_channel_ids(servers: list) -> list:
     for server in servers:
         res = cur.execute("SELECT channel_id FROM server WHERE server_id = (?)",
                         (server, ))
-        r.append(res.fetchone()[0])
     con.close()
     return r
 
@@ -140,26 +144,12 @@ def return_assignments_url(server_id: int) -> str:
     con.close()
     return f'https://{org}.instructure.com/courses/{id}/assignments'
 
-def return_due_date(assignment) -> str:
-    try:
-        date = assignment.due_at_date.strftime('%m/%d %I:%M %p')
-    except:
-        date = 'No Due Date'
-    return date
-
-def return_due_hour(assignment) -> str:
-    try:
-        date = assignment.due_at_date.strftime('%I:%M %p')
-    except:
-        date = 'No Due Date'
-    return date
-
-def convert_tz(server_id, utc, format):
+def convert_tz(server_id: int, utc: datetime, format: str) -> str:
     tz = return_timezone(server_id)
     date = utc.astimezone(timezone(tz))
     return date.strftime(format)
 
-def return_timezone(server_id):
+def return_timezone(server_id: int) -> str:
     con, cur = create_connection()
     res = cur.execute("SELECT time_zone FROM time WHERE server_id = (?)",
                      (server_id, ))

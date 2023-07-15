@@ -11,9 +11,9 @@ A Discord bot integrated with the LMS Canvas to provide students with daily remi
 Key Features
 -------------
 
-- Can be setup to support all Canvas courses
-- Daily reminders at any time
-- Commands to check upcoming assignments
+- Can be setup to support any Canvas course.
+- Daily reminders at any time.
+- Commands to check upcoming assignments.
 
 Setting up
 ----------
@@ -23,15 +23,15 @@ Setting up
 
 Once the bot is in your server, you will need to initialize him.
 
-You must execute **/initialize** command which will take in 3 inputs.
+You must execute the **/initialize** command which will take in 3 inputs.
 
-Execute this command in the channel you want to receive daily reminders in
+Execute this command in the channel you want to receive daily reminders in.
 By default, reminders are sent at 15:30 UTC, this can be changed.
 
 First input - org
 ###################
 
-You can find this on your Canvas homepage in the URL
+You can find this on your Canvas homepage in the URL.
 
 .. image:: https://cdn.discordapp.com/attachments/1015313926738694234/1128945688932266025/image.png
    :alt: Canvas org in URL
@@ -73,24 +73,37 @@ Example of finished command
 
     /admin initialize org:csulb course_id:10908 token:21372~ast5aHVdWqAIFaVJ8ASvPYxjK1YNihbwAy9tMitupfikn0c61C6OvPw9pctzJjWJ
 
+Changing the Time Zone
+----------------------
+
+**IMPORTANT**: If you do not plan to update your time zone, reminders will be sent at the wrong hour.
+Assignment due dates will also be displaying as the wrong dates and times.
+
+Use the **/time-zone-set** command and it will take 1 input which will be your timezone.
+
+`Use this to find the correct way to input your time zone <https://www.timezoneconverter.com/cgi-bin/findzone.tzc>`_
+
+By default the time zone is UTC.
+
+
+.. code::
+
+    /admin time-zone-set tz:America/Los_Angeles
+
 Changing the Time Daily Reminders are Sent
 ------------------------------------------
 
 Use the **/time-set** command and it will take 1 input
 which will be the time you want to receive daily reminders.
 
-The input must be in the 24-hour clock / military time
+The input must be in the 24-hour clock / military time.
+
+The default time is 15:30 UTC.
 
 Ex. 08:30 or 22:30
 
-**NOTE**: you will need to convert your time to UTC
-
 Example of finished command
 ###########################
-
-.. code::
-
-    /admin time-set time:08:30
 
 Links
 ------
