@@ -60,7 +60,7 @@ def update_time(server_id: int, time: str) -> bool:
         return False
 
 def validate_time(time) -> bool:
-    if len(time) < 4:
+    if len(time) != 5:
         return False
     
     try:
