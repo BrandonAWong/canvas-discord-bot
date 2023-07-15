@@ -49,7 +49,7 @@ class UserCommands(commands.Cog):
                 description = description.replace(character, '')
 
             due_date: str = convert_tz(
-                server_id, due_date, 
+                server_id,
                 assignment.due_at_date, 
                 "%m/%d %I:%M %p")
             
@@ -82,7 +82,7 @@ class UserCommands(commands.Cog):
         
         for i, assignment in enumerate(assignments):
             due_date: str = convert_tz(
-                server_id, due_date, 
+                server_id,
                 assignment.due_at_date, 
                 "%m/%d %I:%M %p")
             embed.add_field(

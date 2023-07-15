@@ -24,7 +24,7 @@ class Reminder(commands.Cog):
         for i, server in enumerate(server_ids):
             server = server[0]
             _now = convert_tz(server, now, '%H:%M')
-            if _now == times[i][0]:
+            if _now == times[i][0] or True:
                 r.append(server)
 
         await self.daily_reminder(r)
@@ -33,21 +33,20 @@ class Reminder(commands.Cog):
         now: datetime = discord.utils.utcnow()
         
         for server in servers:
-            today: str = now.strftime('%Y-%m-%d')
-            tomorrow: str = str(now + timedelta(days=1)).split()[0]
+            today: str = convert_tz(server, now, '%Y-%m-%d')
+            tomorrow: str = convert_tz(server, (now + timedelta(days=1)), '%Y-%m-%d')
             assignment_count_today = assignment_count_tomorrow = 0
             inner_value_today = inner_value_tomorrow = ''
-            server_id: int = server
-            assignments = return_assignments(server_id)
+            assignments = return_assignments(server)
             
             for assignment in assignments:
                 due_date: str = convert_tz(
-                    server_id,
+                    server,
                     assignment.due_at_date,
                     '%Y-%m-%d')
                 
                 due_hour: str = convert_tz(
-                    server_id,
+                    server,
                     assignment.due_at_date,
                     '%I:%M %p')
 
@@ -67,9 +66,9 @@ class Reminder(commands.Cog):
             if assignment_count_tomorrow == 0:
                 inner_value_tomorrow = 'Nothing due tomorrow 🤩'
 
-            course = return_course(server_id).name
+            course = return_course(server).name
             embed = discord.Embed(
-                title = f'⏰ {convert_tz(server_id, discord.utils.utcnow(), "%A %m-%d")}',
+                title = f'⏰ {convert_tz(server, discord.utils.utcnow(), "%A %m-%d")}',
                 color = 0xFFFF00)
             
             embed.add_field(
@@ -91,9 +90,12 @@ class Reminder(commands.Cog):
             else:
                 embed.set_footer(text = random.choice(self.quotes))
             
-            channel_id = return_channel_id(server)
-            channel = self.bot.get_channel(channel_id)
-            await channel.send(embed=embed)
+            try:
+                channel_id = return_channel_id(server)
+                channel = self.bot.get_channel(channel_id)
+                await channel.send(embed=embed)
+            except:
+                pass
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Reminder(bot))
