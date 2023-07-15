@@ -46,7 +46,6 @@ def validate_upload(server_id: int) -> bool:
 
 def update_time(server_id: int, time: str) -> bool:
     con, cur = create_connection()
-    time = time.astimezone()
 
     cur.execute(
         "UPDATE time SET time = (?) WHERE server_id = (?)",
@@ -61,6 +60,9 @@ def update_time(server_id: int, time: str) -> bool:
         return False
 
 def validate_time(time) -> bool:
+    if len(time) < 4:
+        return False
+    
     try:
         datetime.strptime(time, '%H:%M')
         return True
