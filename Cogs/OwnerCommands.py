@@ -20,8 +20,8 @@ class OwnerCommands(commands.Cog):
         await ctx.reply('cleared and synced')
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, server_id) -> None:
-        delete_server(server_id)
+    async def on_guild_remove(self, guild) -> None:
+        delete_server(guild.id)
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(OwnerCommands(bot))

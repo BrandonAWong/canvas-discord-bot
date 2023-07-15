@@ -93,7 +93,7 @@ def validate_time_zone(tz) -> bool:
 
 def delete_server(server_id) -> None:
     con, cur = create_connection()
-
+    
     cur.execute(
         "DELETE FROM server WHERE server_id = (?)", 
         (server_id, ))
