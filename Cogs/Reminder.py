@@ -24,7 +24,7 @@ class Reminder(commands.Cog):
         for i, server in enumerate(server_ids):
             server = server[0]
             _now = convert_tz(server, now, '%H:%M')
-            if _now == times[i][0] or True:
+            if _now == times[i][0]:
                 r.append(server)
 
         await self.daily_reminder(r)
