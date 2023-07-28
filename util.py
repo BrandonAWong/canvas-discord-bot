@@ -25,7 +25,7 @@ def upload_row(server_id: int, channel_id: int, org: str, course_id: int, token:
         
         cur.execute(
             "INSERT INTO time VALUES (?, ?, ?)",
-            (server_id, '15:30', 'UTC'))
+            (server_id, '08:30', 'UTC'))
         
     con.commit()
     con.close()

@@ -98,9 +98,9 @@ which will be the time you want to receive daily reminders.
 
 The input must be in the 24-hour clock / military time.
 
-The default time is 15:30 UTC.
+The default time is 08:30.
 
-Ex. 08:30 or 22:30
+Ex. 08:30 or 22:30 or 00:00
 
 .. code::
 
