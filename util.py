@@ -112,7 +112,7 @@ def return_server_ids() -> list[tuple]:
     con.close()
     return info
 
-def return_channel_id(server_id) -> list:
+def return_channel_id(server_id=None) -> int:
     con, cur = create_connection()
 
     res = cur.execute(
