@@ -20,10 +20,10 @@ class Reminder(commands.Cog):
         server_ids: list[tuple] = return_server_ids()
         times: list[tuple] = return_times()
         for i, server in enumerate(server_ids):
-            server: int = server[0]
-            _now: str = convert_tz(server, now, '%H:%M')
+            server_id: int = server[0]
+            _now: str = convert_tz(server_id, now, '%H:%M')
             if _now == times[i][0]:
-                await self.daily_reminder(server)
+                await self.daily_reminder(server_id)
 
     async def daily_reminder(self, server: int) -> None:
         now: datetime = discord.utils.utcnow()
@@ -86,7 +86,10 @@ class Reminder(commands.Cog):
 
         channel_id = return_channel_id(server)
         channel = self.bot.get_channel(channel_id)
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except:
+            pass
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Reminder(bot))
