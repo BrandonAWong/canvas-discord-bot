@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
-import random
+from random import choice
 from util import *
 
 
@@ -79,17 +79,15 @@ class Reminder(commands.Cog):
             value = inner_value_tomorrow, 
             inline = False)
         
-        if random.randint(0,1) == 1:
-            embed.set_footer(text = random.choice(self.facts))
+        if choice([True, False]):
+            embed.set_footer(text = choice(self.facts))
         else:
-            embed.set_footer(text = random.choice(self.quotes))
+            embed.set_footer(text = choice(self.quotes))
 
         channel_id = return_channel_id(server)
         channel = self.bot.get_channel(channel_id)
-        try:
+        if channel:
             await channel.send(embed=embed)
-        except:
-            pass
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Reminder(bot))
